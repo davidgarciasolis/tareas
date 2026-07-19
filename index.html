@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f6f8" />
+    <title>Mis tareas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <section id="login-view" class="login-view" aria-labelledby="login-title">
+        <div class="login-decoration" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="login-card">
+          <div class="brand-mark" aria-hidden="true">✓</div>
+          <p class="eyebrow">TU ESPACIO PERSONAL</p>
+          <h1 id="login-title">Pon tus ideas<br /><em>en orden.</em></h1>
+          <p class="login-intro">Organiza el día, una tarea cada vez.</p>
+          <form id="login-form" novalidate>
+            <label for="email">Correo electrónico</label>
+            <input id="email" name="email" type="email" autocomplete="username" placeholder="tu@correo.com" required />
+            <label for="password">Contraseña</label>
+            <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required /><button type="button" class="icon-button" id="toggle-password" aria-label="Mostrar contraseña">◉</button></div>
+            <p id="login-error" class="form-error" role="alert" hidden></p>
+            <button class="primary-button login-button" type="submit"><span>Entrar a mi espacio</span><span aria-hidden="true">→</span></button>
+          </form>
+          <p class="login-footnote">Acceso privado · Tus datos son solo tuyos</p>
+        </div>
+      </section>
+
+      <section id="workspace-view" class="workspace-view" hidden>
+        <header class="topbar">
+          <a class="wordmark" href="#folders" aria-label="Ir a mis carpetas"><span class="brand-mark small">✓</span> mis tareas</a>
+          <div class="topbar-actions"><span id="user-email" class="user-email"></span><button id="logout-button" class="text-button" type="button">Cerrar sesión <span aria-hidden="true">↗</span></button></div>
+        </header>
+        <main class="main-content">
+          <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+          <div id="workspace-content"></div>
+        </main>
+      </section>
+    </div>
+    <script src="app.js" defer></script>
+  </body>
+</html>
