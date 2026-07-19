@@ -17,7 +17,6 @@
     const requestOptions = { ...options, headers };
     if (!requestOptions.method || requestOptions.method.toUpperCase() === 'GET') {
       requestOptions.cache = 'no-store';
-      headers['Cache-Control'] = 'no-cache';
     }
     return fetch(`${CONFIG.apiUrl}${path}`, requestOptions).then(async (response) => {
       const body = await response.json().catch(() => ({}));
