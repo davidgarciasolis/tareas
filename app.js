@@ -14,7 +14,12 @@
   function api(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
     if (state.session?.access_token) headers.Authorization = `Bearer ${state.session.access_token}`;
-    return fetch(`${CONFIG.apiUrl}${path}`, { ...options, headers }).then(async (response) => {
+    const requestOptions = { ...options, headers };
+    if (!requestOptions.method || requestOptions.method.toUpperCase() === 'GET') {
+      requestOptions.cache = 'no-store';
+      headers['Cache-Control'] = 'no-cache';
+    }
+    return fetch(`${CONFIG.apiUrl}${path}`, requestOptions).then(async (response) => {
       const body = await response.json().catch(() => ({}));
       if (!response.ok) { const error = new Error(body?.errors?.[0]?.message || `Error ${response.status}`); error.status = response.status; throw error; }
       return body.data ?? body;
