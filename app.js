@@ -229,7 +229,7 @@
 
   async function fetchFolders() {
     return withAuth(() => api(
-      `/items/carpetas_tareas?filter[eliminada][_eq]=false&fields=id,nombre,date_created&sort=-date_created&_refresh=${Date.now()}`,
+      `/items/carpetas_tareas?fields=id,nombre,date_created&sort=-date_created&_refresh=${Date.now()}`,
     ));
   }
 
@@ -284,7 +284,6 @@
         </a>
         <div class="card-actions">
           <button class="mini-button" title="Renombrar" aria-label="Renombrar ${escapeHtml(folder.nombre)}" data-action="rename-folder" data-id="${folder.id}">✎</button>
-          <button class="mini-button" title="Eliminar" aria-label="Eliminar ${escapeHtml(folder.nombre)}" data-action="delete-folder" data-id="${folder.id}">×</button>
         </div>
       </article>
     `;
@@ -326,22 +325,6 @@
         body: JSON.stringify({ nombre: name.trim() }),
       }));
       notify('Carpeta renombrada');
-      await loadFolders();
-    } catch (error) {
-      notify(error.message, true);
-    }
-  }
-
-  async function deleteFolder(id) {
-    const folder = state.folders.find((item) => item.id === id);
-    if (!folder || !confirm(`¿Eliminar “${folder.nombre}”? Sus tareas también se archivarán.`)) return;
-
-    try {
-      await withAuth(() => api(`/items/carpetas_tareas/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ eliminada: true }),
-      }));
-      notify('Carpeta eliminada');
       await loadFolders();
     } catch (error) {
       notify(error.message, true);
@@ -623,7 +606,6 @@
 
     if (action === 'new-folder') createFolder();
     if (action === 'rename-folder') renameFolder(target.dataset.id);
-    if (action === 'delete-folder') deleteFolder(target.dataset.id);
     if (action === 'retry') route();
     if (action === 'logout') {
       clearSession();
