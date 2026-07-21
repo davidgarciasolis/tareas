@@ -526,7 +526,7 @@
     try {
       await withAuth(() => api('/items/tareas', {
         method: 'POST',
-        body: JSON.stringify({ titulo: title, carpeta: folderId, completada: false }),
+        body: JSON.stringify({ titulo: title, carpeta: folderId }),
       }));
       form.reset();
       notify('Tarea añadida');
