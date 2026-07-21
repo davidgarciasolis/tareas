@@ -524,7 +524,7 @@
     setBusy(button, true, 'Añadiendo…');
 
     try {
-      await withAuth(() => api('/items/tareas?fields=id', {
+      const created = await withAuth(() => api('/items/tareas?fields=id', {
         method: 'POST',
         body: JSON.stringify({ titulo: title, carpeta: folderId }),
       }));
@@ -535,6 +535,25 @@
         await loadFolder(folderId);
       } else {
         await loadTasks();
+
+        // Directus puede tardar un instante en incluir el registro recién creado
+        // en la consulta general. Mientras tanto lo mostramos localmente.
+        if (created?.id && !state.tasks.some((task) => String(task.id) === String(created.id))) {
+          const folder = state.folders.find((item) => String(item.id) === String(folderId));
+          state.tasks = [
+            {
+              id: created.id,
+              titulo: title,
+              descripcion: '',
+              completada: false,
+              carpeta: folderId,
+              folderId,
+              folderName: folder?.nombre || 'Sin carpeta',
+            },
+            ...state.tasks,
+          ];
+          renderTasks();
+        }
       }
     } catch (error) {
       notify(error.message, true);
