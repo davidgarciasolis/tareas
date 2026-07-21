@@ -524,7 +524,7 @@
     setBusy(button, true, 'Añadiendo…');
 
     try {
-      await withAuth(() => api('/items/tareas', {
+      await withAuth(() => api('/items/tareas?fields=id', {
         method: 'POST',
         body: JSON.stringify({ titulo: title, carpeta: folderId }),
       }));
