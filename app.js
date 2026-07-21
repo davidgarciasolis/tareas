@@ -239,6 +239,7 @@
 
     try {
       state.folders = await fetchFolders();
+      state.loading = false;
       renderFolders();
     } catch (error) {
       $('#workspace-content').innerHTML = errorView(error.message);
@@ -363,6 +364,7 @@
             : folderNames.get(String(folderId)) || 'Sin carpeta',
         };
       });
+      state.loading = false;
       renderTasks();
     } catch (error) {
       $('#workspace-content').innerHTML = errorView(error.message);
@@ -442,6 +444,7 @@
       state.tasks = await withAuth(() => api(
         `/items/tareas?filter[carpeta][_eq]=${encodeURIComponent(id)}&fields=id,titulo,descripcion,completada,date_created&sort=-date_created`,
       ));
+      state.loading = false;
       renderFolder();
     } catch (error) {
       $('#workspace-content').innerHTML = errorView(error.message);
