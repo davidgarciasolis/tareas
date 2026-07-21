@@ -357,7 +357,7 @@
     try {
       const [tasks, folders] = await Promise.all([
         withAuth(() => api(
-          `/items/tareas?filter[eliminada][_eq]=false&fields=id,titulo,descripcion,completada,date_created,carpeta&sort=-date_created&_refresh=${Date.now()}`,
+          `/items/tareas?fields=id,titulo,descripcion,completada,date_created,carpeta&sort=-date_created&_refresh=${Date.now()}`,
         )),
         fetchFolders(),
       ]);
@@ -457,7 +457,7 @@
       }
 
       state.tasks = await withAuth(() => api(
-        `/items/tareas?filter[carpeta][_eq]=${encodeURIComponent(id)}&filter[eliminada][_eq]=false&fields=id,titulo,descripcion,completada,date_created&sort=-date_created`,
+        `/items/tareas?filter[carpeta][_eq]=${encodeURIComponent(id)}&fields=id,titulo,descripcion,completada,date_created&sort=-date_created`,
       ));
       renderFolder();
     } catch (error) {
@@ -521,7 +521,6 @@
           <textarea data-field="descripcion" placeholder="Añade una descripción…" aria-label="Descripción">${escapeHtml(task.descripcion || '')}</textarea>
           <div class="editor-footer">
             <span class="save-status" data-status>Guardado</span>
-            <button class="danger-button" data-action="delete-task" type="button">Eliminar tarea</button>
           </div>
         </div>
       </article>
@@ -585,27 +584,6 @@
     }, 550));
   }
 
-  async function deleteTask(card) {
-    const id = card.dataset.taskId;
-    if (!confirm('¿Eliminar esta tarea?')) return;
-
-    try {
-      await withAuth(() => api(`/items/tareas/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ eliminada: true }),
-      }));
-      notify('Tarea eliminada');
-
-      if (location.hash.match(/^#folder\//)) {
-        await loadFolder(state.folder.id);
-      } else {
-        await loadTasks();
-      }
-    } catch (error) {
-      notify(error.message, true);
-    }
-  }
-
   // Events and routing ----------------------------------------------------
 
   function refreshCurrentView() {
@@ -651,8 +629,6 @@
       clearSession();
       showLogin();
     }
-    if (action === 'delete-task') deleteTask(target.closest('.task-card'));
-
     if (action === 'toggle-completed') {
       const card = target.closest('.task-card');
       const completed = !card.classList.contains('done');
