@@ -405,7 +405,7 @@
       <div class="page-header">
         <div>
           <p class="eyebrow">TU ESPACIO PERSONAL</p>
-          <h2>Mis tareas</h2>
+          <h2>Tareas</h2>
           <p>Tus pendientes y tus logros, en un mismo lugar.</p>
         </div>
         <a class="secondary-button" href="#folders">Gestionar carpetas <span aria-hidden="true">↗</span></a>
