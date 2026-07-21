@@ -13,21 +13,16 @@
   <body>
     <div id="app" class="app-shell">
       <section id="login-view" class="login-view" aria-labelledby="login-title">
-        <div class="login-decoration" aria-hidden="true"><span></span><span></span><span></span></div>
         <div class="login-card">
-          <div class="brand-mark" aria-hidden="true">✓</div>
-          <p class="eyebrow">TU ESPACIO PERSONAL</p>
-          <h1 id="login-title">Pon tus ideas<br /><em>en orden.</em></h1>
-          <p class="login-intro">Organiza el día, una tarea cada vez.</p>
-          <form id="login-form" novalidate>
-            <label for="email">Correo electrónico</label>
-            <input id="email" name="email" type="email" autocomplete="username" placeholder="tu@correo.com" required />
-            <label for="password">Contraseña</label>
-            <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required /><button type="button" class="icon-button" id="toggle-password" aria-label="Mostrar contraseña">◉</button></div>
+          <div class="brand-mark" aria-hidden="true">T</div>
+          <h1 id="login-title">Mis tareas</h1>
+          <p class="login-intro">Organiza tu día, una tarea cada vez.</p>
+          <form id="login-form" class="login-form" novalidate>
+            <label class="login-field" for="email"><span>Correo electrónico</span><input id="email" name="email" type="email" autocomplete="username" placeholder="tu@correo.com" required /></label>
+            <label class="login-field" for="password"><span>Contraseña</span><span class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Tu contraseña" required /><button type="button" class="icon-button" id="toggle-password" aria-label="Mostrar contraseña">Mostrar</button></span></label>
             <p id="login-error" class="form-error" role="alert" hidden></p>
-            <button class="primary-button login-button" type="submit"><span>Entrar a mi espacio</span><span aria-hidden="true">→</span></button>
+            <button class="primary-button login-button" type="submit">Entrar</button>
           </form>
-          <p class="login-footnote">Acceso privado · Tus datos son solo tuyos</p>
         </div>
       </section>
 
@@ -42,6 +37,6 @@
         </main>
       </section>
     </div>
-    <script src="app.js?v=11" defer></script>
+    <script src="app.js?v=12" defer></script>
   </body>
 </html>
