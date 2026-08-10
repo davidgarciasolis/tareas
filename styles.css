@@ -478,12 +478,19 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+.task-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: -14px 0 34px;
+}
+
 .task-view-toggle {
   position: relative;
-  display: inline-grid;
+  display: grid;
+  flex: 0 0 auto;
   grid-template-columns: 1fr 1fr;
   width: min(100%, 330px);
-  margin: -14px 0 20px;
   padding: 4px;
   background: #ebecef;
   border-radius: 12px;
@@ -527,7 +534,7 @@ button:disabled {
 .search-field {
   position: relative;
   display: block;
-  margin: 0 0 34px;
+  flex: 1;
 }
 
 .search-field input {
@@ -649,6 +656,15 @@ button:disabled {
 
   .dashboard-new-task .primary-button {
     min-height: 47px;
+  }
+
+  .task-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .task-view-toggle {
+    width: min(100%, 330px);
   }
 }
 
