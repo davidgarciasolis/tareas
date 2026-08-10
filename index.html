@@ -34,6 +34,17 @@
           <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
           <div id="workspace-content"></div>
         </main>
+        <div id="new-task-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="new-task-title" hidden>
+          <form id="new-task-form" class="task-modal">
+            <div class="modal-header">
+              <h2 id="new-task-title">Nueva tarea</h2>
+              <button class="modal-close" data-action="close-new-task" type="button" aria-label="Cerrar ventana">×</button>
+            </div>
+            <label class="modal-field">Título<input name="title" placeholder="¿Qué necesitas hacer?" required /></label>
+            <label class="modal-field">Descripción<textarea name="description" placeholder="Añade una descripción…"></textarea></label>
+            <button class="primary-button modal-submit" type="submit">Crear tarea</button>
+          </form>
+        </div>
       </section>
     </div>
     <script src="app.js?v=13" defer></script>

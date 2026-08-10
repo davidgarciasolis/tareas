@@ -265,19 +265,14 @@
       `;
 
     $('#workspace-content').innerHTML = `
-      <form id="new-task-form" class="new-task dashboard-new-task">
-        <input class="new-task-input" name="title" placeholder="¿Qué necesitas hacer?" aria-label="Título de la nueva tarea" required />
-        <button class="primary-button" type="submit">
-          <span>Añadir tarea</span><span aria-hidden="true">↗</span>
-        </button>
-      </form>
       <div class="task-tools">
+        <label class="search-field" for="task-search"><span class="search-icon" aria-hidden="true">⌕</span><input id="task-search" type="search" value="${escapeHtml(state.searchQuery)}" placeholder="Buscar por título o descripción" aria-label="Buscar por título o descripción" /></label>
         <div class="task-view-toggle" role="group" aria-label="Mostrar tareas">
           <span class="toggle-thumb ${showingDone ? 'right' : ''}" aria-hidden="true"></span>
           <button class="${showingDone ? '' : 'active'}" data-action="show-pending" type="button" aria-pressed="${!showingDone}">Pendientes <span>${pending.length}</span></button>
           <button class="${showingDone ? 'active' : ''}" data-action="show-done" type="button" aria-pressed="${showingDone}">Completadas <span>${done.length}</span></button>
         </div>
-        <label class="search-field" for="task-search"><span class="search-icon" aria-hidden="true">⌕</span><input id="task-search" type="search" value="${escapeHtml(state.searchQuery)}" placeholder="Buscar por título o descripción" aria-label="Buscar por título o descripción" /></label>
+        <button class="primary-button add-task-button" data-action="open-new-task" type="button"><span>Añadir tarea</span><span aria-hidden="true">+</span></button>
       </div>
       <p class="section-label">${state.tasks.length ? 'TODAS TUS TAREAS' : 'EMPIEZA POR AQUÍ'}</p>
       <div class="task-columns">${loadingState}</div>
@@ -312,17 +307,19 @@
 
   async function createTask(form) {
     const title = form.title.value.trim();
+    const description = form.description.value.trim();
     if (!title) return;
 
-    const button = form.querySelector('button');
+    const button = form.querySelector('button[type=submit]');
     setBusy(button, true, 'Añadiendo…');
 
     try {
       const created = await withAuth(() => api('/items/tareas?fields=id', {
         method: 'POST',
-        body: JSON.stringify({ titulo: title }),
+        body: JSON.stringify({ titulo: title, descripcion: description }),
       }));
       form.reset();
+      closeNewTaskModal();
       notify('Tarea añadida');
 
       await loadTasks();
@@ -334,7 +331,7 @@
           {
             id: created.id,
             titulo: title,
-            descripcion: '',
+            descripcion: description,
             completada: false,
           },
           ...state.tasks,
@@ -390,6 +387,18 @@
     }
   }
 
+  function openNewTaskModal() {
+    const modal = $('#new-task-modal');
+    modal.hidden = false;
+    modal.querySelector('[name=title]').focus();
+  }
+
+  function closeNewTaskModal() {
+    const modal = $('#new-task-modal');
+    modal.hidden = true;
+    modal.querySelector('form').reset();
+  }
+
   // Events and routing ----------------------------------------------------
 
   function refreshCurrentView() {
@@ -434,6 +443,9 @@
     if (action === 'delete-task') {
       deleteTask(target.closest('.task-card').dataset.taskId);
     }
+
+    if (action === 'open-new-task') openNewTaskModal();
+    if (action === 'close-new-task') closeNewTaskModal();
 
     if (action === 'show-pending' || action === 'show-done') {
       state.taskView = action === 'show-done' ? 'done' : 'pending';
@@ -484,6 +496,10 @@
       { completada: event.target.checked },
       card.querySelector('[data-status]'),
     );
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !$('#new-task-modal').hidden) closeNewTaskModal();
   });
 
   $('#toggle-password').addEventListener('click', () => {

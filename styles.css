@@ -478,6 +478,12 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+.add-task-button {
+  flex: 0 0 auto;
+  min-height: 47px;
+  white-space: nowrap;
+}
+
 .task-tools {
   display: flex;
   align-items: center;
@@ -553,6 +559,94 @@ button:disabled {
   left: 13px;
   color: var(--muted);
   font-size: 22px;
+}
+
+/* New task modal --------------------------------------------------------- */
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: #20212466;
+}
+
+.task-modal {
+  display: grid;
+  width: min(100%, 500px);
+  gap: 18px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 22px 70px #20212438;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font: 700 25px Syne, sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.modal-close {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  color: var(--muted);
+  font-size: 27px;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+}
+
+.modal-close:hover {
+  color: var(--ink);
+  background: #f1f2f3;
+}
+
+.modal-field {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.modal-field input,
+.modal-field textarea {
+  width: 100%;
+  padding: 13px 14px;
+  color: var(--ink);
+  background: #fcfcfd;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+}
+
+.modal-field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.modal-field input:focus,
+.modal-field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #e85d4218;
+}
+
+.modal-submit {
+  justify-content: center;
 }
 
 .empty-state {
