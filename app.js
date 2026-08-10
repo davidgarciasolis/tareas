@@ -272,7 +272,7 @@
           <button class="${showingDone ? '' : 'active'}" data-action="show-pending" type="button" aria-pressed="${!showingDone}">Pendientes <span>${pending.length}</span></button>
           <button class="${showingDone ? 'active' : ''}" data-action="show-done" type="button" aria-pressed="${showingDone}">Completadas <span>${done.length}</span></button>
         </div>
-        <button class="primary-button add-task-button" data-action="open-new-task" type="button"><span>Añadir tarea</span><span aria-hidden="true">+</span></button>
+        <button class="primary-button add-task-button" data-action="open-new-task" type="button"><span>Añadir tarea</span><span aria-hidden="true">↗</span></button>
       </div>
       <p class="section-label">${state.tasks.length ? 'TODAS TUS TAREAS' : 'EMPIEZA POR AQUÍ'}</p>
       <div class="task-columns">${loadingState}</div>

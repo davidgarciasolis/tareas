@@ -544,7 +544,7 @@ button:disabled {
 }
 
 .search-field input {
-  width: min(100%, 420px);
+  width: 100%;
   padding: 12px 14px 12px 39px;
   color: var(--ink);
   background: #fff;
