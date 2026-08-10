@@ -5,8 +5,6 @@
   const STORAGE_KEY = 'mis-tareas-session';
   const state = {
     session: loadSession(),
-    folders: [],
-    folder: null,
     tasks: [],
     loading: false,
     saveTimers: new Map(),
@@ -225,113 +223,6 @@
     }
   }
 
-  // Folders ----------------------------------------------------------------
-
-  async function fetchFolders() {
-    return withAuth(() => api(
-      `/items/carpetas_tareas?fields=id,nombre,date_created&sort=-date_created&_refresh=${Date.now()}`,
-    ));
-  }
-
-  async function loadFolders() {
-    state.loading = true;
-    renderFolders();
-
-    try {
-      state.folders = await fetchFolders();
-      state.loading = false;
-      renderFolders();
-    } catch (error) {
-      $('#workspace-content').innerHTML = errorView(error.message);
-    } finally {
-      state.loading = false;
-    }
-  }
-
-  function renderFolders() {
-    const folderCards = state.loading
-      ? '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>'
-      : state.folders.map(folderCard).join('');
-    const addFolderCard = !state.loading && state.folders.length
-      ? '<button class="add-card" data-action="new-folder">+ Añadir carpeta</button>'
-      : '';
-    const emptyState = !state.loading && !state.folders.length
-      ? '<div class="empty-state"><strong>Aún no tienes carpetas</strong><span>Crea una para empezar a ordenar tus tareas.</span><br><button class="retry-button" data-action="new-folder">Crear mi primera carpeta</button></div>'
-      : '';
-
-    $('#workspace-content').innerHTML = `
-      <div class="page-header">
-        <div>
-          <p class="eyebrow">TU ORGANIZACIÓN</p>
-          <h2>Mis carpetas</h2>
-          <p>Todo lo que tienes en marcha, en un mismo lugar.</p>
-        </div>
-        <button class="primary-button" data-action="new-folder">
-          <span>+ Nueva carpeta</span>
-        </button>
-      </div>
-      <p class="section-label">${state.folders.length ? 'CARPETAS ACTIVAS' : 'EMPIEZA POR AQUÍ'}</p>
-      <div class="folder-grid">${folderCards}${addFolderCard}${emptyState}</div>
-    `;
-  }
-
-  function folderCard(folder) {
-    return `
-      <article class="folder-card">
-        <a class="folder-link" href="#folder/${encodeURIComponent(folder.id)}">
-          <div class="folder-icon" aria-hidden="true"></div>
-          <div class="folder-name">${escapeHtml(folder.nombre)}</div>
-          <div class="folder-meta">Abrir carpeta →</div>
-        </a>
-        <div class="card-actions">
-          <button class="mini-button" title="Renombrar" aria-label="Renombrar ${escapeHtml(folder.nombre)}" data-action="rename-folder" data-id="${folder.id}">✎</button>
-        </div>
-      </article>
-    `;
-  }
-
-  async function createFolder() {
-    const name = prompt('Nombre de la nueva carpeta:');
-    if (!name?.trim()) return;
-
-    try {
-      const created = await withAuth(() => api('/items/carpetas_tareas', {
-        method: 'POST',
-        body: JSON.stringify({ nombre: name.trim() }),
-      }));
-
-      if (created?.id) {
-        state.folders = [
-          created,
-          ...state.folders.filter((folder) => folder.id !== created.id),
-        ];
-        renderFolders();
-      }
-
-      notify('Carpeta creada');
-      await loadFolders();
-    } catch (error) {
-      notify(error.message, true);
-    }
-  }
-
-  async function renameFolder(id) {
-    const folder = state.folders.find((item) => item.id === id);
-    const name = prompt('Nuevo nombre:', folder?.nombre || '');
-    if (!name?.trim() || name.trim() === folder?.nombre) return;
-
-    try {
-      await withAuth(() => api(`/items/carpetas_tareas/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ nombre: name.trim() }),
-      }));
-      notify('Carpeta renombrada');
-      await loadFolders();
-    } catch (error) {
-      notify(error.message, true);
-    }
-  }
-
   // Tasks ------------------------------------------------------------------
 
   async function loadTasks() {
@@ -339,31 +230,9 @@
     renderTasks();
 
     try {
-      const [tasks, folders] = await Promise.all([
-        withAuth(() => api(
-          `/items/tareas?fields=id,titulo,descripcion,completada,date_created,carpeta&sort=-date_created&_refresh=${Date.now()}`,
-        )),
-        fetchFolders(),
-      ]);
-
-      state.folders = folders;
-      const folderNames = new Map(
-        folders.map((folder) => [String(folder.id), folder.nombre]),
-      );
-
-      state.tasks = tasks.map((task) => {
-        const folderId = typeof task.carpeta === 'object'
-          ? task.carpeta?.id
-          : task.carpeta;
-
-        return {
-          ...task,
-          folderId,
-          folderName: typeof task.carpeta === 'object'
-            ? task.carpeta?.nombre
-            : folderNames.get(String(folderId)) || 'Sin carpeta',
-        };
-      });
+      state.tasks = await withAuth(() => api(
+        `/items/tareas?filter[eliminada][_eq]=false&fields=id,titulo,descripcion,completada,eliminada,date_created&sort=-date_created&_refresh=${Date.now()}`,
+      ));
       state.loading = false;
       renderTasks();
     } catch (error) {
@@ -371,14 +240,6 @@
     } finally {
       state.loading = false;
     }
-  }
-
-  function folderOptions(selected = '') {
-    return state.folders.map((folder) => `
-      <option value="${escapeHtml(folder.id)}" ${String(folder.id) === String(selected) ? 'selected' : ''}>
-        ${escapeHtml(folder.nombre)}
-      </option>
-    `).join('');
   }
 
   function renderTasks() {
@@ -408,82 +269,16 @@
           <h2>Tareas</h2>
           <p>Tus pendientes y tus logros, en un mismo lugar.</p>
         </div>
-        <a class="secondary-button" href="#folders">Gestionar carpetas <span aria-hidden="true">↗</span></a>
       </div>
       <form id="new-task-form" class="new-task dashboard-new-task">
         <input class="new-task-input" name="title" placeholder="¿Qué necesitas hacer?" aria-label="Título de la nueva tarea" required />
-        <select class="folder-select" name="folder" aria-label="Carpeta de la nueva tarea" ${state.folders.length ? '' : 'disabled'}>
-          ${state.folders.length ? folderOptions() : '<option>No tienes carpetas</option>'}
-        </select>
-        <button class="primary-button" type="submit" ${state.folders.length ? '' : 'disabled'}>
+        <button class="primary-button" type="submit">
           <span>Añadir tarea</span><span aria-hidden="true">↗</span>
         </button>
       </form>
-      <p class="form-hint" ${state.folders.length ? 'hidden' : ''}>
-        Crea una carpeta para poder añadir tareas. <a href="#folders">Gestionar carpetas</a>
-      </p>
+      <label class="search-field" for="task-search"><span class="search-icon" aria-hidden="true">⌕</span><input id="task-search" type="search" placeholder="Buscar por título o descripción" aria-label="Buscar por título o descripción" /></label>
       <p class="section-label">${state.tasks.length ? 'TODAS TUS TAREAS' : 'EMPIEZA POR AQUÍ'}</p>
       <div class="task-columns">${loadingState}</div>
-    `;
-  }
-
-  async function loadFolder(id) {
-    state.folder = state.folders.find((folder) => String(folder.id) === String(id)) || {
-      id,
-      nombre: 'Carpeta',
-    };
-    state.loading = true;
-    renderFolder();
-
-    try {
-      if (!state.folders.length) {
-        state.folders = await fetchFolders();
-        state.folder = state.folders.find((folder) => String(folder.id) === String(id)) || state.folder;
-      }
-
-      state.tasks = await withAuth(() => api(
-        `/items/tareas?filter[carpeta][_eq]=${encodeURIComponent(id)}&fields=id,titulo,descripcion,completada,date_created&sort=-date_created`,
-      ));
-      state.loading = false;
-      renderFolder();
-    } catch (error) {
-      $('#workspace-content').innerHTML = errorView(error.message);
-    } finally {
-      state.loading = false;
-    }
-  }
-
-  function renderFolder() {
-    const pending = state.tasks.filter((task) => !task.completada);
-    const done = state.tasks.filter((task) => task.completada);
-
-    $('#workspace-content').innerHTML = `
-      <a class="back-link" href="#folders">← Todas las carpetas</a>
-      <div class="folder-heading">
-        <div class="folder-icon" aria-hidden="true"></div>
-        <div>
-          <p class="eyebrow">CARPETA</p>
-          <h2>${escapeHtml(state.folder.nombre)}</h2>
-        </div>
-      </div>
-      <form id="new-task-form" class="new-task">
-        <input class="new-task-input" name="title" placeholder="¿Qué necesitas hacer?" aria-label="Título de la nueva tarea" required />
-        <button class="primary-button" type="submit"><span>Añadir tarea</span><span aria-hidden="true">↗</span></button>
-      </form>
-      <div class="task-columns">
-        <section>
-          <h3 class="task-column-title"><span class="dot"></span>Pendientes <span class="count">${pending.length}</span></h3>
-          <div class="task-list">
-            ${state.loading ? '<div class="empty-state">Cargando tareas…</div>' : pending.length ? pending.map(taskCard).join('') : '<div class="empty-state"><strong>Todo despejado</strong><span>No tienes tareas pendientes.</span></div>'}
-          </div>
-        </section>
-        <section>
-          <h3 class="task-column-title"><span class="dot green"></span>Completadas <span class="count">${done.length}</span></h3>
-          <div class="task-list">
-            ${state.loading ? '' : done.length ? done.map(taskCard).join('') : '<div class="empty-state"><span>Aquí aparecerán tus tareas terminadas.</span></div>'}
-          </div>
-        </section>
-      </div>
     `;
   }
 
@@ -497,7 +292,6 @@
           <button class="task-title-button" data-action="toggle-task" type="button" aria-expanded="false">
             <span>
               <span class="task-title">${escapeHtml(task.titulo)}</span>
-              ${task.folderName ? `<small class="task-folder">${escapeHtml(task.folderName)}</small>` : ''}
             </span>
             <span class="chevron" aria-hidden="true">⌄</span>
           </button>
@@ -507,6 +301,7 @@
           <textarea data-field="descripcion" placeholder="Añade una descripción…" aria-label="Descripción">${escapeHtml(task.descripcion || '')}</textarea>
           <div class="editor-footer">
             <span class="save-status" data-status>Guardado</span>
+            <button class="danger-button" data-action="delete-task" type="button">Eliminar tarea</button>
           </div>
         </div>
       </article>
@@ -515,13 +310,7 @@
 
   async function createTask(form) {
     const title = form.title.value.trim();
-    const folderId = form.elements.folder?.value || state.folder?.id;
     if (!title) return;
-
-    if (!folderId) {
-      notify('Crea una carpeta antes de añadir tareas', true);
-      return;
-    }
 
     const button = form.querySelector('button');
     setBusy(button, true, 'Añadiendo…');
@@ -529,34 +318,26 @@
     try {
       const created = await withAuth(() => api('/items/tareas?fields=id', {
         method: 'POST',
-        body: JSON.stringify({ titulo: title, carpeta: folderId }),
+        body: JSON.stringify({ titulo: title }),
       }));
       form.reset();
       notify('Tarea añadida');
 
-      if (location.hash.match(/^#folder\//)) {
-        await loadFolder(folderId);
-      } else {
-        await loadTasks();
+      await loadTasks();
 
-        // Directus puede tardar un instante en incluir el registro recién creado
-        // en la consulta general. Mientras tanto lo mostramos localmente.
-        if (created?.id && !state.tasks.some((task) => String(task.id) === String(created.id))) {
-          const folder = state.folders.find((item) => String(item.id) === String(folderId));
-          state.tasks = [
-            {
-              id: created.id,
-              titulo: title,
-              descripcion: '',
-              completada: false,
-              carpeta: folderId,
-              folderId,
-              folderName: folder?.nombre || 'Sin carpeta',
-            },
-            ...state.tasks,
-          ];
-          renderTasks();
-        }
+      // Directus puede tardar un instante en incluir el registro recién creado
+      // en la consulta general. Mientras tanto lo mostramos localmente.
+      if (created?.id && !state.tasks.some((task) => String(task.id) === String(created.id))) {
+        state.tasks = [
+          {
+            id: created.id,
+            titulo: title,
+            descripcion: '',
+            completada: false,
+          },
+          ...state.tasks,
+        ];
+        renderTasks();
       }
     } catch (error) {
       notify(error.message, true);
@@ -589,26 +370,32 @@
     }, 550));
   }
 
-  // Events and routing ----------------------------------------------------
+  async function deleteTask(taskId) {
+    if (!window.confirm('¿Eliminar esta tarea?')) return;
 
-  function refreshCurrentView() {
-    if (location.hash.match(/^#folder\//)) {
-      loadFolder(state.folder.id);
-    } else {
-      loadTasks();
+    try {
+      clearTimeout(state.saveTimers.get(taskId));
+      state.saveTimers.delete(taskId);
+      await withAuth(() => api(`/items/tareas/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ eliminada: true }),
+      }));
+      state.tasks = state.tasks.filter((task) => String(task.id) !== String(taskId));
+      renderTasks();
+      notify('Tarea eliminada');
+    } catch (error) {
+      notify(error.message, true);
     }
   }
 
-  function route() {
-    const match = location.hash.match(/^#folder\/(.+)$/);
+  // Events and routing ----------------------------------------------------
 
-    if (match) {
-      loadFolder(decodeURIComponent(match[1]));
-    } else if (location.hash === '#folders') {
-      loadFolders();
-    } else {
-      loadTasks();
-    }
+  function refreshCurrentView() {
+    loadTasks();
+  }
+
+  function route() {
+    loadTasks();
   }
 
   document.addEventListener('submit', (event) => {
@@ -626,8 +413,6 @@
 
     const action = target.dataset.action;
 
-    if (action === 'new-folder') createFolder();
-    if (action === 'rename-folder') renameFolder(target.dataset.id);
     if (action === 'retry') route();
     if (action === 'logout') {
       clearSession();
@@ -644,6 +429,10 @@
       setTimeout(refreshCurrentView, 700);
     }
 
+    if (action === 'delete-task') {
+      deleteTask(target.closest('.task-card').dataset.taskId);
+    }
+
     if (action === 'toggle-task') {
       const card = target.closest('.task-card');
       const editor = card.querySelector('.task-editor');
@@ -658,6 +447,18 @@
   });
 
   document.addEventListener('input', (event) => {
+    if (event.target.id === 'task-search') {
+      const query = event.target.value.trim().toLocaleLowerCase();
+      document.querySelectorAll('.task-card').forEach((card) => {
+        const task = state.tasks.find((item) => String(item.id) === card.dataset.taskId);
+        const matches = !query || `${task?.titulo || ''} ${task?.descripcion || ''}`
+          .toLocaleLowerCase()
+          .includes(query);
+        card.hidden = !matches;
+      });
+      return;
+    }
+
     const field = event.target.dataset.field;
     if (!field) return;
 

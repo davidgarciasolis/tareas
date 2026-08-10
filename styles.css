@@ -26,7 +26,6 @@ body {
 
 button,
 input,
-select,
 textarea {
   font: inherit;
 }
@@ -126,7 +125,7 @@ button:disabled {
 .task-editor input:focus,
 .task-editor textarea:focus,
 .new-task-input:focus,
-.folder-select:focus {
+.search-field input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px #e85d4218;
 }
@@ -285,137 +284,7 @@ button:disabled {
   transform: translateY(-1px);
 }
 
-/* Folders ---------------------------------------------------------------- */
-
-.folder-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.folder-card {
-  position: relative;
-  min-height: 180px;
-  padding: 24px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  transition: 0.2s;
-}
-
-.folder-card:hover {
-  border-color: #d8aaa0;
-  box-shadow: 0 10px 26px #20212409;
-  transform: translateY(-2px);
-}
-
-.folder-link {
-  display: block;
-  height: 100%;
-  padding-right: 5px;
-  color: inherit;
-  text-decoration: none;
-}
-
-.folder-icon {
-  position: relative;
-  width: 38px;
-  height: 31px;
-  margin-bottom: 33px;
-  background: #fae0a4;
-  border-radius: 4px 7px 5px 5px;
-}
-
-.folder-icon::before {
-  position: absolute;
-  top: -5px;
-  left: 0;
-  width: 15px;
-  height: 8px;
-  background: #fae0a4;
-  border-radius: 4px 4px 0 0;
-  content: "";
-}
-
-.folder-name {
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.folder-meta {
-  margin-top: 7px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.card-actions {
-  position: absolute;
-  top: 18px;
-  right: 15px;
-  display: flex;
-  gap: 3px;
-}
-
-.mini-button {
-  padding: 6px;
-  color: #a0a3a7;
-  font-size: 15px;
-  background: transparent;
-  border: 0;
-  border-radius: 6px;
-}
-
-.mini-button:hover {
-  color: var(--accent);
-  background: #f1f2f3;
-}
-
-.add-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 180px;
-  color: var(--muted);
-  font-weight: 600;
-  background: transparent;
-  border: 1px dashed #cdd0d4;
-  border-radius: 14px;
-}
-
-.add-card:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
 /* Tasks ------------------------------------------------------------------ */
-
-.back-link {
-  color: var(--muted);
-  font-size: 13px;
-  text-decoration: none;
-}
-
-.back-link:hover {
-  color: var(--accent);
-}
-
-.folder-heading {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 38px;
-}
-
-.folder-heading h2 {
-  margin: 12px 0 0;
-  font: 700 clamp(31px, 5vw, 48px) / 1 Syne, sans-serif;
-  letter-spacing: -0.06em;
-}
-
-.folder-heading .folder-icon {
-  margin: 0;
-}
 
 .task-columns {
   display: grid;
@@ -528,14 +397,6 @@ button:disabled {
   text-decoration: line-through;
 }
 
-.task-folder {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 500;
-}
-
 .chevron {
   color: #9b9da1;
   font-size: 12px;
@@ -611,10 +472,6 @@ button:disabled {
   padding: 0 17px;
 }
 
-.dashboard-new-task {
-  align-items: stretch;
-}
-
 .dashboard-new-task .new-task-input {
   flex: 1;
 }
@@ -623,9 +480,15 @@ button:disabled {
   flex: 0 0 auto;
 }
 
-.folder-select {
-  min-width: 180px;
-  padding: 0 13px;
+.search-field {
+  position: relative;
+  display: block;
+  margin: -18px 0 34px;
+}
+
+.search-field input {
+  width: min(100%, 420px);
+  padding: 12px 14px 12px 39px;
   color: var(--ink);
   background: #fff;
   border: 1px solid var(--line);
@@ -633,15 +496,12 @@ button:disabled {
   outline: none;
 }
 
-.form-hint {
-  margin: -24px 0 34px;
+.search-icon {
+  position: absolute;
+  top: 8px;
+  left: 13px;
   color: var(--muted);
-  font-size: 12px;
-}
-
-.form-hint a {
-  color: var(--accent);
-  font-weight: 700;
+  font-size: 22px;
 }
 
 .empty-state {
@@ -743,35 +603,17 @@ button:disabled {
     margin-bottom: 30px;
   }
 
-  .folder-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .task-columns {
     grid-template-columns: 1fr;
     gap: 33px;
   }
 
-  .folder-card,
-  .add-card {
-    min-height: 160px;
-  }
-
-  .dashboard-new-task .folder-select,
   .dashboard-new-task .primary-button {
     min-height: 47px;
   }
 }
 
 @media (max-width: 460px) {
-  .folder-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .add-card {
-    min-height: 70px;
-  }
-
   .new-task {
     flex-direction: column;
   }
