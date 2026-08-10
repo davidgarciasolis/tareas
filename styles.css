@@ -287,9 +287,7 @@ button:disabled {
 /* Tasks ------------------------------------------------------------------ */
 
 .task-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  max-width: 680px;
 }
 
 .task-column-title {
@@ -480,10 +478,56 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+.task-view-toggle {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(100%, 330px);
+  margin: -14px 0 20px;
+  padding: 4px;
+  background: #ebecef;
+  border-radius: 12px;
+}
+
+.task-view-toggle button {
+  position: relative;
+  z-index: 1;
+  padding: 9px 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+}
+
+.task-view-toggle button.active {
+  color: var(--ink);
+}
+
+.task-view-toggle button span {
+  margin-left: 4px;
+  font-size: 11px;
+}
+
+.toggle-thumb {
+  position: absolute;
+  inset: 4px auto 4px 4px;
+  width: calc(50% - 4px);
+  background: #fff;
+  border-radius: 9px;
+  box-shadow: 0 2px 5px #20212418;
+  transition: transform 0.22s ease;
+}
+
+.toggle-thumb.right {
+  transform: translateX(100%);
+}
+
 .search-field {
   position: relative;
   display: block;
-  margin: -18px 0 34px;
+  margin: 0 0 34px;
 }
 
 .search-field input {
@@ -601,11 +645,6 @@ button:disabled {
     align-items: start;
     flex-direction: column;
     margin-bottom: 30px;
-  }
-
-  .task-columns {
-    grid-template-columns: 1fr;
-    gap: 33px;
   }
 
   .dashboard-new-task .primary-button {

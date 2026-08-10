@@ -7,6 +7,8 @@
     session: loadSession(),
     tasks: [],
     loading: false,
+    taskView: 'pending',
+    searchQuery: '',
     saveTimers: new Map(),
   };
 
@@ -245,38 +247,36 @@
   function renderTasks() {
     const pending = state.tasks.filter((task) => !task.completada);
     const done = state.tasks.filter((task) => task.completada);
+    const showingDone = state.taskView === 'done';
+    const activeTasks = showingDone ? done : pending;
+    const query = state.searchQuery.trim().toLocaleLowerCase();
+    const visibleTasks = activeTasks.filter((task) => !query || `${task.titulo || ''} ${task.descripcion || ''}`
+      .toLocaleLowerCase()
+      .includes(query));
     const loadingState = state.loading
       ? '<section><div class="task-list"><div class="empty-state">Cargando tareas…</div></div></section>'
       : `
         <section>
-          <h3 class="task-column-title"><span class="dot"></span>Pendientes <span class="count">${pending.length}</span></h3>
+          <h3 class="task-column-title"><span class="dot ${showingDone ? 'green' : ''}"></span>${showingDone ? 'Completadas' : 'Pendientes'} <span class="count">${visibleTasks.length}</span></h3>
           <div class="task-list">
-            ${pending.length ? pending.map(taskCard).join('') : '<div class="empty-state"><strong>Todo despejado</strong><span>No tienes tareas pendientes.</span></div>'}
-          </div>
-        </section>
-        <section>
-          <h3 class="task-column-title"><span class="dot green"></span>Completadas <span class="count">${done.length}</span></h3>
-          <div class="task-list">
-            ${done.length ? done.map(taskCard).join('') : '<div class="empty-state"><span>Aquí aparecerán tus tareas terminadas.</span></div>'}
+            ${visibleTasks.length ? visibleTasks.map(taskCard).join('') : `<div class="empty-state">${query ? '<strong>No hay coincidencias</strong><span>Prueba con otra búsqueda.</span>' : showingDone ? '<span>Aquí aparecerán tus tareas terminadas.</span>' : '<strong>Todo despejado</strong><span>No tienes tareas pendientes.</span>'}</div>`}
           </div>
         </section>
       `;
 
     $('#workspace-content').innerHTML = `
-      <div class="page-header">
-        <div>
-          <p class="eyebrow">TU ESPACIO PERSONAL</p>
-          <h2>Tareas</h2>
-          <p>Tus pendientes y tus logros, en un mismo lugar.</p>
-        </div>
-      </div>
       <form id="new-task-form" class="new-task dashboard-new-task">
         <input class="new-task-input" name="title" placeholder="¿Qué necesitas hacer?" aria-label="Título de la nueva tarea" required />
         <button class="primary-button" type="submit">
           <span>Añadir tarea</span><span aria-hidden="true">↗</span>
         </button>
       </form>
-      <label class="search-field" for="task-search"><span class="search-icon" aria-hidden="true">⌕</span><input id="task-search" type="search" placeholder="Buscar por título o descripción" aria-label="Buscar por título o descripción" /></label>
+      <div class="task-view-toggle" role="group" aria-label="Mostrar tareas">
+        <span class="toggle-thumb ${showingDone ? 'right' : ''}" aria-hidden="true"></span>
+        <button class="${showingDone ? '' : 'active'}" data-action="show-pending" type="button" aria-pressed="${!showingDone}">Pendientes <span>${pending.length}</span></button>
+        <button class="${showingDone ? 'active' : ''}" data-action="show-done" type="button" aria-pressed="${showingDone}">Completadas <span>${done.length}</span></button>
+      </div>
+      <label class="search-field" for="task-search"><span class="search-icon" aria-hidden="true">⌕</span><input id="task-search" type="search" value="${escapeHtml(state.searchQuery)}" placeholder="Buscar por título o descripción" aria-label="Buscar por título o descripción" /></label>
       <p class="section-label">${state.tasks.length ? 'TODAS TUS TAREAS' : 'EMPIEZA POR AQUÍ'}</p>
       <div class="task-columns">${loadingState}</div>
     `;
@@ -433,6 +433,11 @@
       deleteTask(target.closest('.task-card').dataset.taskId);
     }
 
+    if (action === 'show-pending' || action === 'show-done') {
+      state.taskView = action === 'show-done' ? 'done' : 'pending';
+      renderTasks();
+    }
+
     if (action === 'toggle-task') {
       const card = target.closest('.task-card');
       const editor = card.querySelector('.task-editor');
@@ -448,7 +453,8 @@
 
   document.addEventListener('input', (event) => {
     if (event.target.id === 'task-search') {
-      const query = event.target.value.trim().toLocaleLowerCase();
+      state.searchQuery = event.target.value;
+      const query = state.searchQuery.trim().toLocaleLowerCase();
       document.querySelectorAll('.task-card').forEach((card) => {
         const task = state.tasks.find((item) => String(item.id) === card.dataset.taskId);
         const matches = !query || `${task?.titulo || ''} ${task?.descripcion || ''}`
